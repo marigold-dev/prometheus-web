@@ -1,0 +1,4 @@
+(library
+ (name prometheus_dream)
+ (public_name prometheus-dream)
+ (libraries prometheus prometheus-app-pure lwt dream cmdliner fmt re))
