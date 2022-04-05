@@ -39,7 +39,7 @@
         ocaml-ng = 
           builtins.mapAttrs (_: ocamlPackages:
             ocamlPackages
-            // (pkgs.callPackage ./nix/generic.nix {
+            // (prev.callPackage ./nix/generic.nix {
                 inherit ocamlPackages; doCheck = true;
               })) prev.ocaml-ng;
       };
