@@ -34,14 +34,15 @@
               ];
           });
         };
-    in with flake-utils.lib; eachSystem defaultSystems out // {
-      overlay =  final: prev: {
-        ocaml-ng = 
-          builtins.mapAttrs (_: ocamlPackages:
-            ocamlPackages
-            // (prev.callPackage ./nix/generic.nix {
-                inherit ocamlPackages; doCheck = true;
-              })) prev.ocaml-ng;
+    in with flake-utils.lib;
+    eachSystem defaultSystems out // {
+      overlay = final: prev: {
+        ocaml-ng = builtins.mapAttrs (_: ocamlVersion:
+          ocamlVersion.overrideScope' (oself: osuper:
+            prev.callPackage ./nix/generic.nix {
+              ocamlPackages = osuper;
+              doCheck = true;
+            })) prev.ocaml-ng;
       };
     };
 
