@@ -34,7 +34,11 @@
               ];
           });
 
-          packages = myPkgs;
+          packages = builtins.mapAttrs (_: ocamlPackages:
+            ocamlPackages
+            // (pkgs.callPackage ./nix/generic.nix {
+                inherit ocamlPackages; doCheck = true;
+              })) pkgs.ocaml-ng;
         };
     in with flake-utils.lib; eachSystem defaultSystems out;
 
