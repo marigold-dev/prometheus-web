@@ -10,6 +10,12 @@
 
   outputs = { self, nixpkgs, flake-utils, ocaml-overlay }:
     let
+      systems = [
+        "aarch64-linux"
+        "aarch64-darwin"
+        "x86_64-darwin"
+        "x86_64-linux"
+      ];
       out = system:
         let
           pkgs = import nixpkgs {
@@ -20,7 +26,6 @@
           myPkgs = pkgs.ocaml-ng.ocamlPackages.callPackage ./nix/generic.nix { doCheck = true; };
           myDrvs = lib.filterAttrs (_: value: lib.isDerivation value) myPkgs;
         in {
-          packages = myPkgs;
           devShell = (pkgs.mkShell {
             inputsFrom = builtins.attrValues myDrvs;
             buildInputs = with myPkgs; [ prometheus ];
@@ -36,8 +41,8 @@
           });
         };
     in with flake-utils.lib;
-    eachSystem defaultSystems out // {
-      overlay = final: prev: {
+    eachSystem systems out // {
+      overlays.default = final: prev: {
         ocaml-ng = builtins.mapAttrs (_: ocamlVersion:
           ocamlVersion.overrideScope' (oself: osuper:
             ocamlVersion.callPackage ./nix/generic.nix {
