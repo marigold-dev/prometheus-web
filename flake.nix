@@ -39,8 +39,8 @@
       overlay = final: prev: {
         ocaml-ng = builtins.mapAttrs (_: ocamlVersion:
           ocamlVersion.overrideScope' (oself: osuper:
-            prev.callPackage ./nix/generic.nix {
-              ocamlPackages = osuper;
+            final.callPackage ./nix/generic.nix {
+              ocamlPackages = oself;
               doCheck = true;
             })) prev.ocaml-ng;
       };
