@@ -10,6 +10,12 @@
 
   outputs = { self, nixpkgs, flake-utils, ocaml-overlay }:
     let
+      systems = [
+        "aarch64-linux"
+        "aarch64-darwin"
+        "x86_64-darwin"
+        "x86_64-linux"
+      ];
       out = system:
         let
           pkgs = import nixpkgs {
@@ -17,7 +23,7 @@
             overlays = [ ocaml-overlay.overlay ];
           };
           inherit (pkgs) lib;
-          myPkgs = pkgs.callPackage ./nix/generic.nix { doCheck = true; };
+          myPkgs = pkgs.ocaml-ng.ocamlPackages.callPackage ./nix/generic.nix { doCheck = true; };
           myDrvs = lib.filterAttrs (_: value: lib.isDerivation value) myPkgs;
         in {
           devShell = (pkgs.mkShell {
@@ -33,9 +39,16 @@
                 nixfmt
               ];
           });
-
-          packages = myPkgs;
         };
-    in with flake-utils.lib; eachSystem defaultSystems out;
+    in with flake-utils.lib;
+    eachSystem systems out // {
+      overlays.default = final: prev: {
+        ocaml-ng = builtins.mapAttrs (_: ocamlVersion:
+          ocamlVersion.overrideScope' (oself: osuper:
+            ocamlVersion.callPackage ./nix/generic.nix {
+              doCheck = true;
+            })) prev.ocaml-ng;
+      };
+    };
 
 }

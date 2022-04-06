@@ -1,6 +1,6 @@
-{ pkgs, stdenv, lib, ocamlPackages, static ? false, doCheck }:
+{ pkgs, stdenv, lib, buildDunePackage, ocaml, topkg, findlib, ocamlbuild, astring, fmt, re, lwt, alcotest, piaf, dream, cmdliner, doCheck }:
 
-with ocamlPackages; rec {
+rec {
   asetmap = stdenv.mkDerivation rec {
     version = "0.8.1";
     pname = "asetmap";
@@ -10,9 +10,12 @@ with ocamlPackages; rec {
       sha256 = "051ky0k62xp4inwi6isif56hx5ggazv4jrl7s5lpvn9cj8329frj";
     };
 
-    nativeBuildInputs = with ocamlPackages; [ topkg findlib ocamlbuild ocaml ];
+    strictDeps = true;
 
-    inherit (ocamlPackages.topkg) buildPhase installPhase;
+    nativeBuildInputs =[ topkg findlib ocamlbuild ocaml ];
+    buildInputs = [ topkg ];
+
+    inherit (topkg) buildPhase installPhase;
   };
 
   prometheus = buildDunePackage rec {
@@ -24,7 +27,9 @@ with ocamlPackages; rec {
       sha256 = "1r4rylxmhggpwr1i7za15cpxdvgxf0mvr5143pvf9gq2ijr8pkzv";
     };
 
-    propagatedBuildInputs = with ocamlPackages; [
+    strictDeps = true;
+
+    propagatedBuildInputs = [
       astring
       asetmap
       fmt
@@ -38,11 +43,7 @@ with ocamlPackages; rec {
     pname = "prometheus-app-pure";
     version = "1.0.0";
 
-    src = lib.filterGitSource {
-      src = ./..;
-      dirs = [ "src/prometheus-app-pure" ];
-      files = [ "dune-project" "prometheus-app-pure.opam" ];
-    };
+    src = ./..;
 
     checkInputs = [ ];
 
@@ -57,11 +58,7 @@ with ocamlPackages; rec {
     pname = "prometheus-dream";
     version = "1.0.0";
 
-    src = lib.filterGitSource {
-      src = ./..;
-      dirs = [ "src/prometheus-dream" ];
-      files = [ "dune-project" "prometheus-dream.opam" ];
-    };
+    src = ./..;
 
     checkInputs = [ ];
 
@@ -77,11 +74,7 @@ with ocamlPackages; rec {
     pname = "prometheus-piaf";
     version = "1.0.0";
 
-    src = lib.filterGitSource {
-      src = ./..;
-      dirs = [ "src/prometheus-piaf" ];
-      files = [ "dune-project" "prometheus-piaf.opam" ];
-    };
+    src = ./..;
 
     checkInputs = [ ];
 
