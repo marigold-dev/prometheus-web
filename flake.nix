@@ -17,9 +17,10 @@
             overlays = [ ocaml-overlay.overlay ];
           };
           inherit (pkgs) lib;
-          myPkgs = pkgs.callPackage ./nix/generic.nix { doCheck = true; };
+          myPkgs = pkgs.ocaml-ng.ocamlPackages.callPackage ./nix/generic.nix { doCheck = true; };
           myDrvs = lib.filterAttrs (_: value: lib.isDerivation value) myPkgs;
         in {
+          packages = myPkgs;
           devShell = (pkgs.mkShell {
             inputsFrom = builtins.attrValues myDrvs;
             buildInputs = with myPkgs; [ prometheus ];
@@ -39,7 +40,7 @@
       overlay = final: prev: {
         ocaml-ng = builtins.mapAttrs (_: ocamlVersion:
           ocamlVersion.overrideScope' (oself: osuper:
-            final.callPackage ./nix/generic.nix {
+            oself.callPackage ./nix/generic.nix {
               ocamlPackages = oself;
               doCheck = true;
             })) prev.ocaml-ng;
