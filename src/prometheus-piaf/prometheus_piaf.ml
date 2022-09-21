@@ -3,7 +3,7 @@
  *)
 
 open Prometheus
-open Prometheus_app_pure
+open Prometheus_reporter
 
 module Unix_runtime = struct
   let start_time = Unix.gettimeofday ()
@@ -45,12 +45,13 @@ let listen_prometheus =
 let opts : config Cmdliner.Term.t = listen_prometheus
 
 let request_handler _ =
-  let data = Prometheus.CollectorRegistry.(collect default) in
+  let open Lwt.Syntax in
+  let* data = Prometheus.CollectorRegistry.(collect default) in
   let body =
-    Fmt.to_to_string TextFormat_0_0_4.output data |> Piaf.Body.of_string in
+    Fmt.to_to_string TextFormat_0_0_4.output data |> Piaf_lwt.Body.of_string in
   let headers =
-    Piaf.Headers.of_list [("Content-Type", "text/plain; version=0.0.4")] in
-  Piaf.Response.create ~headers ~body `OK |> Lwt.return
+    Piaf_lwt.Headers.of_list [("Content-Type", "text/plain; version=0.0.4")] in
+  Piaf_lwt.Response.create ~headers ~body `OK |> Lwt.return
 
 let serve : config -> unit Lwt.t = function
   | None -> Lwt.return ()
@@ -59,7 +60,7 @@ let serve : config -> unit Lwt.t = function
     let listen_address = Unix.(ADDR_INET (inet_addr_loopback, port)) in
     Lwt.async (fun () ->
         Lwt_io.establish_server_with_client_socket listen_address
-          (Piaf.Server.create ?config:None request_handler)
+          (Piaf_lwt.Server.create ?config:None request_handler)
         >|= fun _server ->
         Printf.printf "Listening on port %i and echoing POST requests.\n%!" port);
     let forever, _ = Lwt.wait () in

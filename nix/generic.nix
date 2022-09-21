@@ -1,4 +1,4 @@
-{ pkgs, stdenv, lib, buildDunePackage, ocaml, topkg, findlib, ocamlbuild, astring, fmt, re, lwt, alcotest, piaf, dream, cmdliner, doCheck }:
+{ pkgs, stdenv, lib, fetchFromGitHub, buildDunePackage, ocaml, topkg, findlib, ocamlbuild, astring, fmt, re, lwt, alcotest, piaf-lwt, dream, cmdliner, logs, prometheus_source }:
 
 rec {
   asetmap = stdenv.mkDerivation rec {
@@ -12,20 +12,16 @@ rec {
 
     strictDeps = true;
 
-    nativeBuildInputs =[ topkg findlib ocamlbuild ocaml ];
+    nativeBuildInputs = [ topkg findlib ocamlbuild ocaml ];
     buildInputs = [ topkg ];
 
     inherit (topkg) buildPhase installPhase;
   };
 
   prometheus = buildDunePackage rec {
-    version = "1.1.0";
+    version = "1.2.0";
     pname = "prometheus";
-    src = pkgs.fetchurl {
-      url =
-        "https://github.com/mirage/prometheus/releases/download/v1.1/prometheus-v1.1.tbz";
-      sha256 = "1r4rylxmhggpwr1i7za15cpxdvgxf0mvr5143pvf9gq2ijr8pkzv";
-    };
+    src = prometheus_source;
 
     strictDeps = true;
 
@@ -39,49 +35,49 @@ rec {
     ];
   };
 
-  prometheus-app-pure = buildDunePackage {
-    pname = "prometheus-app-pure";
-    version = "1.0.0";
+  prometheus-reporter = buildDunePackage {
+    pname = "prometheus-reporter";
+    version = "1.2.0";
 
-    src = ./..;
+    src = prometheus_source;
 
-    checkInputs = [ ];
+    checkInputs = [ alcotest ];
 
-    propagatedBuildInputs = [ prometheus fmt re ];
+    propagatedBuildInputs = [ prometheus fmt cmdliner lwt logs fmt ];
 
-    inherit doCheck;
+    doCheck = true;
 
     meta = { description = "Client library for Prometheus monitoring"; };
   };
 
   prometheus-dream = buildDunePackage {
     pname = "prometheus-dream";
-    version = "1.0.0";
+    version = "1.2.0";
 
     src = ./..;
 
     checkInputs = [ ];
 
     propagatedBuildInputs =
-      [ prometheus prometheus-app-pure dream lwt cmdliner ];
+      [ prometheus prometheus-reporter dream lwt cmdliner ];
 
-    inherit doCheck;
+    doCheck = true;
 
     meta = { description = "Dream integration for prometheus"; };
   };
 
   prometheus-piaf = buildDunePackage {
     pname = "prometheus-piaf";
-    version = "1.0.0";
+    version = "1.2.0";
 
     src = ./..;
 
     checkInputs = [ ];
 
     propagatedBuildInputs =
-      [ prometheus prometheus-app-pure piaf lwt cmdliner ];
+      [ prometheus prometheus-reporter piaf-lwt lwt cmdliner ];
 
-    inherit doCheck;
+    doCheck = true;
 
     meta = { description = "Dream integration for prometheus"; };
   };

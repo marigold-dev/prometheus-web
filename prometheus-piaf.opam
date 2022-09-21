@@ -4,8 +4,8 @@ version: "1.0.0"
 synopsis: "Client library for Prometheus monitoring"
 description: "Use Piaf to serve metrics"
 maintainer: ["contact@marigold.dev"]
-authors: ["Thomas Leonard" "David Scott" "Ulrik Strid"]
-license: "Apache-2.0"
+authors: ["Ulrik Strid"]
+license: "BSD3"
 homepage: "https://github.com/marigold-dev/prometheus-web"
 bug-reports: "https://github.com/marigold-dev/prometheus-web/issues"
 depends: [
@@ -14,7 +14,7 @@ depends: [
   "piaf"
   "prometheus"
   "lwt"
-  "prometheus-app-pure" {= version}
+  "prometheus-app-pure"
   "odoc" {with-doc}
 ]
 build: [
@@ -26,9 +26,11 @@ build: [
     name
     "-j"
     jobs
+    "--promote-install-files=false"
     "@install"
     "@runtest" {with-test}
     "@doc" {with-doc}
   ]
+  ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/marigold-dev/prometheus-web.git"

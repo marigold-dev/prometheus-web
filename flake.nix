@@ -1,14 +1,13 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nix-ocaml/nix-overlays";
     flake-utils.url = "github:numtide/flake-utils";
 
-    ocaml-overlay.url = "github:anmonteiro/nix-overlays";
-    ocaml-overlay.inputs.nixpkgs.follows = "nixpkgs";
-    ocaml-overlay.inputs.flake-utils.follows = "flake-utils";
+    prometheus_source.url = "github:ulrikstrid/prometheus?ref=5acd3509eb5679a26374316356fb6455c879cd5a";
+    prometheus_source.flake = false;
   };
 
-  outputs = { self, nixpkgs, flake-utils, ocaml-overlay }:
+  outputs = { self, nixpkgs, flake-utils, prometheus_source }:
     let
       systems = [
         "aarch64-linux"
@@ -20,15 +19,14 @@
         let
           pkgs = import nixpkgs {
             inherit system;
-            overlays = [ ocaml-overlay.overlay ];
           };
           inherit (pkgs) lib;
-          myPkgs = pkgs.ocaml-ng.ocamlPackages.callPackage ./nix/generic.nix { doCheck = true; };
+          myPkgs = pkgs.ocaml-ng.ocamlPackages.callPackage ./nix/generic.nix { inherit prometheus_source; };
           myDrvs = lib.filterAttrs (_: value: lib.isDerivation value) myPkgs;
-        in {
+        in
+        {
           devShell = (pkgs.mkShell {
-            inputsFrom = builtins.attrValues myDrvs;
-            buildInputs = with myPkgs; [ prometheus ];
+            inputsFrom = with myDrvs; [ prometheus-dream prometheus-piaf ];
             nativeBuildInputs = with pkgs;
               with ocamlPackages; [
                 ocaml-lsp
@@ -39,15 +37,18 @@
                 nixfmt
               ];
           });
+
+          packages = myPkgs;
         };
-    in with flake-utils.lib;
+    in
+    with flake-utils.lib;
     eachSystem systems out // {
       overlays.default = final: prev: {
-        ocaml-ng = builtins.mapAttrs (_: ocamlVersion:
-          ocamlVersion.overrideScope' (oself: osuper:
-            ocamlVersion.callPackage ./nix/generic.nix {
-              doCheck = true;
-            })) prev.ocaml-ng;
+        ocaml-ng = builtins.mapAttrs
+          (_: ocamlVersion:
+            ocamlVersion.overrideScope' (oself: osuper:
+              ocamlVersion.callPackage ./nix/generic.nix { inherit prometheus_source; }))
+          prev.ocaml-ng;
       };
     };
 

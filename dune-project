@@ -1,42 +1,40 @@
 (lang dune 2.9)
+
 (name prometheus-app)
 
 (version 1.0.0)
 
 (generate_opam_files true)
 
-(source (github marigold-dev/prometheus-web))
-(license Apache-2.0)
-(authors "Thomas Leonard" "David Scott" "Ulrik Strid")
-(maintainers "contact@marigold.dev")
+(source
+ (github marigold-dev/prometheus-web))
 
-(package
- (name prometheus-app-pure)
- (synopsis "Client library for Prometheus monitoring")
- (description "Subset of `prometheus-app` which doesn't depend on a webserver implementation")
- (depends
-  (prometheus (>= 1.1.0))
-  fmt
-  re))
+(license BSD3)
+
+(authors "Ulrik Strid")
+
+(maintainers "contact@marigold.dev")
 
 (package
  (name prometheus-dream)
  (synopsis "Client library for Prometheus monitoring")
  (description "Use Dream to serve metrics")
  (depends
-  (cmdliner (>= 1.1.0))
+  (cmdliner
+   (>= 1.1.0))
   dream
   prometheus
   lwt
-  (prometheus-app-pure (= :version))))
+  prometheus-app-pure))
 
 (package
  (name prometheus-piaf)
  (synopsis "Client library for Prometheus monitoring")
  (description "Use Piaf to serve metrics")
  (depends
-  (cmdliner (>= 1.1.0))
+  (cmdliner
+   (>= 1.1.0))
   piaf
   prometheus
   lwt
-  (prometheus-app-pure (= :version))))
+  prometheus-app-pure))

@@ -1,4 +1,0 @@
-(library
- (name prometheus_app_pure)
- (public_name prometheus-app-pure)
- (libraries prometheus fmt re))

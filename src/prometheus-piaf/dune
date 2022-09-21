@@ -1,4 +1,4 @@
 (library
  (name prometheus_piaf)
  (public_name prometheus-piaf)
- (libraries prometheus prometheus-app-pure lwt piaf cmdliner fmt re))
+ (libraries prometheus prometheus-reporter lwt piaf-lwt cmdliner fmt re))

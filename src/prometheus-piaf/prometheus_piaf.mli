@@ -20,7 +20,7 @@
 type config
 
 val serve : config -> unit Lwt.t
-(** [serve config] starts a Piaf server according to config.
+(** [serve config] starts a Piaf_lwt server according to config.
     It returns a promise containing the thread to monitor,
     or an empty list if no server is configured. *)
 
